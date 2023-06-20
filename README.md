@@ -25,14 +25,17 @@ SchedCLS(ringbuf_nowakeup_test)#12: 198.32416ms
 SchedCLS(queue_test)#10: 166.39498ms
 ```
 
-I have to remind of some points:
+Something to point out:
 
-1. In the repo we don't have any userspace program to fetch data, so events will be dropped when the kernel buffer is gradually filled up.
-2. ringbuf is initialized using the following code:
+1\. In the repo we don't have any userspace program to pull data, so events will be dropped when the kernel buffer is gradually filled up. This might not be the real world running situation because there suppose to be a userspace process consuming events all the time.
+
+2\. Ringbuf is initialized using the following code:
 ```c
 struct {
    __uint(type, BPF_MAP_TYPE_RINGBUF);
    __uint(max_entries, 1<<29);
 } meta_ringbuf1 SEC(".maps");
 ```
-The `1<<29` looks suspicious but I find it necessary, or I'll get panic: `panic: field RingbufWakeupTest: program ringbuf_wakeup_test: map meta_ringbuf1: map create: invalid argument (without BTF k/v)`
+The `1<<29` looks suspicious but I find it necessary, or I'll get an error: `panic: field RingbufWakeupTest: program ringbuf_wakeup_test: map meta_ringbuf1: map create: invalid argument (without BTF k/v)`
+
+3\. Enthusiastic developers provided their test results on the [issues page](https://github.com/jschwinger233/bpf_k2u_benchmark/issues). The majority of test results showed ringbuf still has perf-advantages over bpf queue, although not huge, but still obvious.
